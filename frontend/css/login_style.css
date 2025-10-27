@@ -1,0 +1,90 @@
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+
+    background: linear-gradient(120deg, #000000 40%, #08a84b 100%);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding-left: 150px;
+    font-family: "Poppins", sans-serif;
+}
+
+.signin {
+    text-align: center;
+}
+
+.signin h2 {
+    color: #fff;
+    font-size: 36px;
+}
+
+.inputBox {
+    position: relative;
+    margin-bottom: 35px;
+}
+
+.inputBox input {
+    width: 100%;
+    padding: 8px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid #ffffffab;
+    outline: none;
+    color: #fff;
+    font-size:24px;
+    transition: 0.3s;
+}
+
+.inputBox input:focus {
+    border-bottom: 2px solid #ffffffab;
+}
+
+.inputBox label {
+    position: absolute;
+    left: 0;
+    top: 10px;
+    color: #999;
+    pointer-events: none;
+    transition: 0.3s;
+}
+
+.inputBox input:focus ~ label,
+.inputBox input:valid ~ label {
+    top: -15px;
+    font-size: 12px;
+    color: #fff;
+}
+
+.links {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 35px;
+}
+
+.links a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 13px;
+} 
+
+.button input {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: linear-gradient(90deg, #48f048 10%, #1a6621 160%);
+    color: #fff;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.button input:hover {
+    opacity: 0.8;
+}
