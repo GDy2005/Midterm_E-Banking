@@ -1,0 +1,18 @@
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+
+    background: linear-gradient(120deg, #000000 40%, #08a84b 100%);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding-left: 150px;
+    font-family: "Poppins", sans-serif;
+
+    color: white;
+}
