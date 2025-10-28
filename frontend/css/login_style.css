@@ -30,10 +30,11 @@ body {
     width: 200%;
     height: 200%;
     background: conic-gradient(
-        #03e260,
-        #00ff99,
-        #08a84b,
-        #1c9741
+        #26854d,
+        #1f694c,
+        #19e757,
+        #195f2e,
+        #12632a 
     );
     animation: rotate 4s linear infinite;
     z-index: 0;
@@ -136,4 +137,25 @@ body {
 
 .button input:hover {
     opacity: 0.8;
+}
+
+.fade-out {
+  opacity: 0;
+}
+
+#page-transition {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(120deg, #000000 40%, #08a84b 100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.8s ease;
+  z-index: 9999;
+}
+
+#page-transition.fade-out {
+  opacity: 1;
 }

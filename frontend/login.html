@@ -8,6 +8,7 @@
 </head>
 <body>
     <section>
+        <form id="login-form" onsubmit="return login()">
         <div class="login-border">
             <div class="login">
                 <div class="content">
@@ -29,12 +30,16 @@
                     </div>
 
                     <div class="button">
-                        <input type="submit" value="LOGIN" onclick="login()">
+                        <input type="submit" value="LOGIN">
                     </div>
                 </div>
             </div>
         </div>
+        </form>
     </section>
+
+    <div id="page-transition"></div>
+    
 </body>
 <script src="script.js"></script>
 </html>
