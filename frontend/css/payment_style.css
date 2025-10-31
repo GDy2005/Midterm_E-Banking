@@ -3,16 +3,112 @@ body {
     padding: 0;
     height: 100vh;
 
-    background: linear-gradient(120deg, #000000 40%, #08a84b 100%);
+    background: linear-gradient(120deg, #baddb3 40%, #08a84b 100%);
     background-repeat: no-repeat;
     background-size: cover;
     background-attachment: fixed;
 
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    padding-left: 150px;
     font-family: "Poppins", sans-serif;
+}
 
-    color: white;
+.container {
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* ===== NAVBAR ===== */
+.navbar-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    padding: 8px 30px;
+    border-bottom: 2px solid #142c57;
+    border-radius: 15px;
+    position: relative;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 60px;
+    width: min(4000px, 90%);
+    z-index: 1000;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    color: #000000;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-center {
+  display: flex;
+  gap: 32px;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-item {
+  color: #000000;
+  text-decoration: none;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.nav-item:hover {
+  color: #53f0e8;
+}
+
+.nav-item.active {
+  color: rgb(91, 231, 133);
+}
+
+.nav-item.active::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #179607;
+  border-radius: 3px;
+}
+
+/* ===== Payment Box ===== */
+.payment-page {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 20px;
+  width: min(1100px, 100%);
+  margin: 30px auto;
+  padding: 15px 0;
+}
+
+.userInfo-box, .note-info, .payment, .bill-info {
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 2px 5px rgb(0, 0, 0, 0.1);
+}
+
+.left-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.payment {
+    flex: 2;
+}
+
+.bill-info {
+    flex: 1;
 }

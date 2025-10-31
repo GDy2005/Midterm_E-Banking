@@ -3,15 +3,14 @@ body {
     padding: 0;
     height: 100vh;
 
-    background: linear-gradient(120deg, #000000 40%, #08a84b 100%);
+    background: linear-gradient(120deg, #baddb3 40%, #08a84b 100%);
     background-repeat: no-repeat;
     background-size: cover;
     background-attachment: fixed;
 
     display: flex;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
-    padding-left: 150px;
     font-family: "Poppins", sans-serif;
 }
 
@@ -56,18 +55,18 @@ body {
 
 .login {
     position: relative;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgb(255, 255, 255);
     border-radius: 20px;
     padding: 50px 70px;
-    color: #fff;
+    color: #000000;
     z-index: 2;
     width: 350px;
     text-align: center;
 }
 
 .login h2 {
-    color: #fff;
-    font-size: 36px;
+    color: #000000;
+    font-size: 45px;
 }
 
 .inputBox {
@@ -80,22 +79,22 @@ body {
     padding: 8px;
     background: transparent;
     border: none;
-    border-bottom: 2px solid #ffffffab;
+    border-bottom: 2px solid #000000ab;
     outline: none;
-    color: #fff;
+    color: #525252;
     font-size:24px;
     transition: 0.3s;
 }
 
 .inputBox input:focus {
-    border-bottom: 2px solid #ffffffab;
+    border-bottom: 2px solid #000000;
 }
 
 .inputBox label {
     position: absolute;
     left: 0;
     top: 10px;
-    color: #999;
+    color: #000000;
     pointer-events: none;
     transition: 0.3s;
 }
@@ -103,8 +102,8 @@ body {
 .inputBox input:focus ~ label,
 .inputBox input:valid ~ label {
     top: -15px;
-    font-size: 12px;
-    color: #fff;
+    font-size: 13px;
+    color: #000000;
 }
 
 .links {
@@ -114,29 +113,33 @@ body {
 }
 
 .links a {
-    color: #fff;
+    color: #000000;
     text-decoration: none;
     font-size: 13px;
 } 
 
 .links a:hover {
     opacity: 0.75;
+    color: #3d39fc;
 }
 
 .button input {
     width: 100%;
     padding: 10px;
     border: none;
-    background: linear-gradient(90deg, #48f048 10%, #1a6621 160%);
-    color: #fff;
+    border: #000000;
+    background: linear-gradient(90deg, #48f048 50%, #5dff5d 140%);
+    color: #000000;
     font-weight: bold;
+    border: 1px solid #029415;
     border-radius: 8px;
     cursor: pointer;
     transition: 0.3s;
+    size: 15px;
 }
 
 .button input:hover {
-    opacity: 0.8;
+    opacity: 0.75;
 }
 
 .fade-out {
