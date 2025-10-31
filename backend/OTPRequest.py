@@ -21,8 +21,7 @@ class VerifyOTPReq(BaseModel):
 
 # ====== Function ======
 def generate_otp():
-    return 0
-    # Code tạo otp
+    return str(random.randint(100000,999999))
 
 def send_email(email, otp):
     return 0
