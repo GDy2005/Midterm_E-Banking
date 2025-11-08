@@ -5,8 +5,8 @@ USE db_ebank;
 
 CREATE TABLE Customer (
     CustomerID INT NOT NULL AUTO_INCREMENT,
-    UserName VARCHAR(25) NOT NULL,
-    HashPassword VARCHAR(25) NOT NULL,
+    UserName VARCHAR(25) NOT NULL UNIQUE,
+    HashPassword VARCHAR(255) NOT NULL,
     FullName VARCHAR(50) CHARACTER SET utf8mb4 NOT NULL,
     Balance INT NOT NULL DEFAULT 0,
     Email VARCHAR(50) NOT NULL,
@@ -48,3 +48,16 @@ CREATE TABLE `Transaction` (
     CONSTRAINT FK_Transaction_Customer FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID),
     CONSTRAINT FK_Transaction_Tution FOREIGN KEY (TutionID) REFERENCES Tution(TutionID)
 );
+
+-- Values 
+INSERT INTO Customer (UserName, HashPassword, FullName, Balance, Email, PhoneNumber)
+VALUES
+('admin', 'admin123', 'Duy', 5000000, 'machlegiaduy2005@gmail.com', '0912345678'),
+('lan456', 'hashedpwd2', 'Tran Lan', 3000, 'lan@gmail.com', '0987654321'),
+('hoa789', 'hashedpwd3', 'Le Hoa', 10000, 'hoa@gmail.com', '0901122334');
+
+INSERT INTO Student (StudentID, FullName, Email)
+VALUES
+(1, 'Nguyen Duy', 'duy@student.com'),
+(2, 'Tran Lan', 'lan@student.com'),
+(3, 'Le Hoa', 'hoa@student.com');

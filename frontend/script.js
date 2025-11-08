@@ -16,3 +16,25 @@ function login() {
 
     return false;
 }
+// Change Page function
+const navItems = document.querySelectorAll('.nav-item[data-target]');
+const sections = document.querySelectorAll('#payment-page, #transaction-page, #invest-page');
+
+navItems.forEach(item => {
+    item.addEventListener('click', () => {
+        // Bỏ active khỏi tất cả
+        navItems.forEach(i => i.classList.remove('active'));
+
+        // Thêm active vào item được click
+        item.classList.add('active');
+
+        // Ẩn tất cả section
+        sections.forEach(sec => sec.classList.add('hidden'));
+
+        // Hiện section tương ứng
+        const target = item.getAttribute('data-target');
+        if (target) {
+            document.getElementById(target).classList.remove('hidden');
+        }
+    });
+});

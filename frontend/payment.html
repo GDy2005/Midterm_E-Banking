@@ -14,37 +14,55 @@
             </div>
 
             <div class="nav-center">
-                <a href="#" class="nav-item active">Home</a>
-                <a href="#" class="nav-item">Payments</a>
-                <a href="#" class="nav-item">Transactions</a>
-                <a href="#" class="nav-item">Investments</a>
-                <a href="#" class="nav-item">Notification</a>
+                <a class="nav-item">Home</a>
+                <a class="nav-item active" data-target="payment-page">Payments</a>
+                <a class="nav-item" data-target="transaction-page">Transactions</a>
+                <a class="nav-item" data-target="invest-page">Investments</a>
+                <a class="nav-item">Notification</a>
             </div>
 
-            <div nav="nav-right">
+            <div class="nav-right">
                 <a href="#"  class="nav-item">Settings</a>
             </div>
         </nav>
 
-        <div class="payment-page">
-            <div class="left-col">
-                <div class="userInfo-box">
-                    Cao Duy lỏ  q
+            <!-- Payment Section -->
+            <div id="payment-page" class="payment-page">
+                <div class="left-col">
+                    <div class="userInfo-box">
+                        Cao Duy lỏ  q
+                    </div>
+
+                    <div class="note-info">
+                        Các lưu ý
+                    </div>
                 </div>
 
-                <div class="note-info">
-                    Các lưu ý
+                <div class="payment">
+                    UI Thanh toán
+                </div>
+
+                <div class="bill-info">
+                    Thông tin giao dịch
                 </div>
             </div>
 
-            <div class="payment">
-                UI Thanh toán
+            <!-- Transaction Section -->
+            <div id="transaction-page" class="transaction-page hidden">
+                <h2>UI Giao dịch</h2>
+                <p>Đây là phần giao diện Transaction.</p>
             </div>
 
-            <div class="bill-info">
-                Thông tin giao dịch
+            <!-- Investment Section -->
+            <div id="invest-page" class="transaction-page hidden">
+                <h2>UI Đầu tư</h2>
+                <p>Đây là phần Investment.</p>
             </div>
+
+        <div>
+
         </div>
     </div>
 </body>
+<script src="script.js"></script>
 </html>
