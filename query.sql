@@ -58,6 +58,6 @@ VALUES
 
 INSERT INTO Student (StudentID, FullName, Email)
 VALUES
-(1, 'Nguyen Duy', 'duy@student.com'),
+(1, 'Mạch Lê Gia Duy', 'machlegiaduy2005@gmail.com'),
 (2, 'Tran Lan', 'lan@student.com'),
 (3, 'Le Hoa', 'hoa@student.com');

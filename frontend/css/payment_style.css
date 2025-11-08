@@ -39,8 +39,19 @@ body {
 
 .nav-left {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  align-items: flex-start;
+  font-family: "Poppins", sans-serif;
+}
+
+.nav-left .fullname {
+    font-size: 1.1rem;   
+    font-weight: 600;
+}
+
+.nav-left .phone {
+    font-size: 0.85rem;  
+    opacity: 0.8;
 }
 
 .nav-center {
@@ -82,7 +93,7 @@ body {
 }
 
 /* ===== Payment Box ===== */
-.payment-page {
+.payment-page, .transaction-page {
   display: flex;
   align-items: stretch;
   justify-content: space-between;
@@ -116,4 +127,45 @@ body {
 
 .hidden {
   display: none;
+}
+
+.title-div-left {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.details-div-left {
+  font-size: 1.2rem;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  border: 1px solid black;
+  border-radius: 15px;
+  padding: 15px;
+}
+
+.balance-row {
+    gap: 10px;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+.balance-value {
+    font-weight: 700;
+    color: #007b00;
+}
+
+#toggleBalanceBtn {
+    margin-left: auto; /* đẩy nút sang phải */
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#toggleBalanceBtn:hover {
+    background: #0056b3;
 }

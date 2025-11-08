@@ -19,7 +19,8 @@ async function login(event) {
         }
 
         const data = await response.json();
-        console.log(data); // hoặc lưu token vào localStorage
+
+        localStorage.setItem("token", data.access_token);
         
         window.location.href = "payment.html";
 
@@ -55,15 +56,12 @@ navItems.forEach(item => {
 // Get User Info to page
 async function loadUserInfo() {
     const token = localStorage.getItem("token");
-
     if (!token) return;
 
     try {
-        const res = await fetch("http://127.0.0.1:8000/me", {
+        const res = await fetch("http://127.0.0.1:8000/user/userinfo", {
             method: "GET",
-            headers: {
-                "Authorization": `Bearer ${token}`
-            }
+            headers: { "Authorization": `Bearer ${token}` }
         });
 
         if (!res.ok) {
@@ -71,21 +69,65 @@ async function loadUserInfo() {
             return;
         }
 
-        const user = await res.json();
+        const user = await res.json(); 
 
-        updateNavUser(user);
+        // nav-left
+        const navLeft = document.querySelector(".nav-left");
+        if (navLeft && user) {
+            navLeft.innerHTML = `
+                <div class="fullname">${user.UserName}</div>
+                <div class="phone">${user.PhoneNumber}</div>
+            `;
+        }
 
-        
+        //div left
+        const userBox = document.querySelector(".userInfo-box");
+        if (userBox && user) {
+            const maskedBalance = "*********";
+            userBox.innerHTML = `
+                <div class="title-div-left">Full Name:</div>
+                <div class="details-div-left">${user.FullName}</div>
+
+                <div class="title-div-left">Email: </div>
+                <div class="details-div-left">${user.Email}</div>
+
+                <div class="title-div-left">Phone: </div>
+                <div class="details-div-left">${user.PhoneNumber}</div>
+
+                <div class="balance-row">
+                    <div class="title-div-left">Balance: 
+                        <button id="toggleBalanceBtn">Show</button>
+                    </div>
+                    <div class="details-div-left balance-div">
+                        <span class="balance-value">${maskedBalance}</span>
+                    </div>
+                </div>
+            `;
+            
+            // Show/Hide Balance Button
+            const balanceSpan = userBox.querySelector(".balance-value");
+            const toggleBtn = userBox.querySelector("#toggleBalanceBtn");
+
+            let isShown = false;
+            toggleBtn.addEventListener("click", () => {
+                if (!isShown) {
+                    balanceSpan.textContent = user.Balance;
+                    toggleBtn.textContent = "Hide";
+                    isShown = true;
+                } else {
+                    balanceSpan.textContent = maskedBalance;
+                    toggleBtn.textContent = "Show";
+                    isShown = false;
+                }
+            });
+        }
+
     } catch(err) {
         console.error(err);
     }
-};
-
-document.addEventListener("DOMContentLoaded", () => {
-    loadUserInfo();
-});
-
-function updateNavUser(user) {
-    const navLeft = document.querySelector(".nav-left");
-    navLeft.textContent = `${user.FullName} | ${user.PhoneNumber}`;
 }
+
+document.addEventListener("DOMContentLoaded", loadUserInfo);
+
+
+
