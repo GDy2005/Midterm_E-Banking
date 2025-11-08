@@ -52,9 +52,9 @@ CREATE TABLE `Transaction` (
 -- Values 
 INSERT INTO Customer (UserName, HashPassword, FullName, Balance, Email, PhoneNumber)
 VALUES
-('admin', 'admin123', 'Duy', 5000000, 'machlegiaduy2005@gmail.com', '0912345678'),
-('lan456', 'hashedpwd2', 'Tran Lan', 3000, 'lan@gmail.com', '0987654321'),
-('hoa789', 'hashedpwd3', 'Le Hoa', 10000, 'hoa@gmail.com', '0901122334');
+('Gia Duy', 'admin123', 'Mạch Lê Gia Duy', 5000000, 'machlegiaduy2005@gmail.com', '0912345678'),
+('Chi Thuan', 'admin123', 'Ngô Chí Thuận', 3000000, 'lan@gmail.com', '0987654321'),
+('Cao Duy', 'admin123', 'Cao Văn Duy', 100000000, 'hoa@gmail.com', '0901122334');
 
 INSERT INTO Student (StudentID, FullName, Email)
 VALUES

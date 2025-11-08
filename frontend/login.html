@@ -8,15 +8,15 @@
 </head>
 <body>
     <section>
-        <form id="login-form" onsubmit="return login()">
+        <form id="login-form" onsubmit="login(event)">
         <div class="login-border">
             <div class="login">
                 <div class="content">
                     <h2>LOGIN</h2>
                     <div class="form">
                         <div class="inputBox">
-                            <input type="text" id="username" required>
-                            <label>Username</label>
+                            <input type="text" id="email" required>
+                            <label>Email</label>
                         </div>
                         <div class="inputBox">
                             <input type="password" id="password" required>
@@ -37,8 +37,6 @@
         </div>
         </form>
     </section>
-
-    <div id="page-transition"></div>
 
 </body>
 <script src="script.js"></script>

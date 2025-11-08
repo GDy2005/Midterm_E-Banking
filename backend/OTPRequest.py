@@ -1,9 +1,9 @@
 from fastapi import FastAPI, Depends, HTTPException
 from pydantic import BaseModel, EmailStr
 from datetime import timedelta
-import redis, random
+from db_connection import get_db
 
-import random, smtplib
+import random, smtplib, redis
 
 app = FastAPI()
 
@@ -28,19 +28,18 @@ def send_email(email, otp):
 
 # ====== API Routes ======
 @app.post("/sendotp")
-def sendOTP(requestOTP: VerifyOTPReq, db: Session = Depends(get_db)):
+def sendOTP(requestOTP: sendOTPReq, db = Depends(get_db)):
     otp_code = generate_otp()
-    ttl_seconds = 300  #expire of otp is 5 mins
+    ttl_seconds = 300  #expire in 5 mins
 
-    r.setex(requestOTP.email, timedelta(seconds=ttl_seconds), otp_code)
+    r.setex(requestOTP.email, ttl_seconds, otp_code)
 
     send_email(requestOTP.email, otp_code)
 
     return {"message": "Vui lòng xác thực mã xác nhận vừa gửi trong email bạn"}
-    # Code xử lý tạo otp và gửi otp tới email
 
 @app.post("/verifyotp")
-def verifyOTP(requestOTP: VerifyOTPReq, db: Session = Depends(get_db)):
+def verifyOTP(requestOTP: VerifyOTPReq, db = Depends(get_db)):
     otp_stored = r.get(requestOTP.email)
 
     if not otp_stored:
