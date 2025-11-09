@@ -85,6 +85,8 @@ async function loadUserInfo() {
         if (userBox && user) {
             const maskedBalance = "*********";
             userBox.innerHTML = `
+                <h2>User Infomation</h2>
+                <div class="userinfo-box">
                 <div class="title-div-left">Full Name:</div>
                 <div class="details-div-left">${user.FullName}</div>
 
@@ -101,6 +103,7 @@ async function loadUserInfo() {
                     <div class="details-div-left balance-div">
                         <span class="balance-value">${maskedBalance}</span>
                     </div>
+                </div>
                 </div>
             `;
             

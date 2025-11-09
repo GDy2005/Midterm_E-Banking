@@ -32,21 +32,87 @@
             <div id="payment-page" class="payment-page">
                 <div class="left-col">
                     <div class="userInfo-box">
-                        User Info
-                    </div>
+                        <h2>User Infomation</h2>
+                            User Info
+                        </div>
 
                     <div class="note-info">
                         Các lưu ý:
-                        
                     </div>
                 </div>
 
                 <div class="payment">
-                    UI Thanh toán
+                    <h2 class="payment-title">Tuition Payment</h2>
+
+                    <div class="tuition-box">
+                        <div class="tuition-item">
+                            <label>Student ID:</label>
+                            <input type="text" placeholder="Student ID">
+                        </div>
+
+                        <div class="tuition-item">
+                            <label>Name:</label>
+                            <input type="text" placeholder="Student Name" disabled>
+                        </div>
+
+                        <div class="tuition-item">
+                            <label>Semester:</label>
+                            <input type="text" placeholder="">
+                        </div>
+
+
+                        <div class="tuition-item">
+                            <label>Fee:</label>
+                            <input type="number" placeholder="" disabled>
+                        </div>
+
+                        <div class="tuition-item">
+                            <label>Ghi chú:</label>
+                            <textarea rows="3" placeholder="Nhập ghi chú (nếu có)"></textarea>
+                        </div>
+
+                    </div>
+
+                    <button class="confirm-btn">Confirm</button>
+
                 </div>
 
                 <div class="bill-info">
-                    Thông tin giao dịch
+                    <h2>Invoice</h2>
+                    <div class="invoice-box">
+                        <div class="info-row">
+                            <span class="label">Tuition ID:</span>
+                            <span id="tuitionId">---</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Semester:</span>
+                            <span id="semester">---</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Date Start:</span>
+                            <span id="dateStart">---</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Date End:</span>
+                            <span id="dateEnd">---</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Student ID:</span>
+                            <span id="studentId">---</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Name:</span>
+                            <span id="studentName">---</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Email:</span>
+                            <span id="studentEmail">---</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Fee:</span>
+                            <span id="fee">---</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -61,7 +127,7 @@
                         Các lưu ý:
                         
                     </div>
-                    
+
                     <div class="payment">
                         UI Thanh toán
                     </div>

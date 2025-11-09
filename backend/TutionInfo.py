@@ -1,8 +1,7 @@
 from fastapi import FastAPI, HTTPException, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from db_connection import get_connection
 from jose import jwt
+from db_connection import get_connection
 
 app = FastAPI()
 
@@ -16,9 +15,6 @@ app.add_middleware(
 
 SECRET_KEY = "your_secret_key"
 ALGORITHM = "HS256"
-
-class UserReq(BaseModel):
-    token: str
 
 def get_current_email(authorization: str = Header(...)):
     try:
@@ -44,16 +40,42 @@ def get_userinfo(email: str):
     finally:
         conn.close()
 
+# ====== Lấy học phí theo StudentID (liên kết theo Email) ======
+def get_tutioninfo(student_id: int):
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM Tution WHERE StudentID=%s", (student_id,))
+        tutions = cur.fetchall()
+        return tutions
+    finally:
+        conn.close()
+
 # ====== Endpoint ======
-@app.get("/userinfo")
-def get_userinfo_route(current_user_email: str = Depends(get_current_email)):
+@app.get("/tutioninfo")
+def get_tutioninfo_route(current_user_email: str = Depends(get_current_email)):
     user = get_userinfo(current_user_email)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
+    student_id = user["StudentID"] 
+    tution_list = get_tutioninfo(student_id)
+
+    if not tution_list:
+        raise HTTPException(status_code=404, detail="No tuition records found")
+
     return {
-        "UserName": user["UserName"],
+        "StudentID": student_id,
         "FullName": user["FullName"],
         "Email": user["Email"],
-        "PhoneNumber": user["PhoneNumber"],
-        "Balance": user["Balance"]
+        "TuitionRecords": [
+            {
+                "TutionID": t["TutionID"],
+                "Semester": t["Semester"],
+                "Fee": t["Fee"],
+                "BeginDate": t["BeginDate"],
+                "EndDate": t["EndDate"],
+            }
+            for t in tution_list
+        ]
     }
