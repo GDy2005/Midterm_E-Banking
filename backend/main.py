@@ -2,11 +2,18 @@ from fastapi import FastAPI, HTTPException, Header, Depends, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr
 from backend.db_connection import get_connection, get_db
+from backend.redis_connection import get_redis_connection
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 import random, smtplib, redis
 from fastapi.middleware.cors import CORSMiddleware
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import secrets
+import string
+from typing import List, Iterable, Set
 
 app = FastAPI()
 
@@ -154,35 +161,34 @@ def get_userinfo_route(current_user: dict = Depends(get_current_active_user)):
     }
 
 # ====== TUITION API ======
-def get_tuitioninfo(student_id: int, semester: str = None):
+def get_tuitioninfo(student_id: str, semester: str = None):
     conn = get_connection()
     try:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM tuition WHERE Student.StudentID=Tuition.StudentID AND Tuition.Tuition.TuitionID=Transaction AND StudentID=%s AND Semester=%s", (student_id, semester))
+        if semester == None:
+            cur.execute("SELECT Tuition.*, `Transaction`.`Status` FROM Tuition INNER JOIN `Transaction` ON `Transaction`.TuitionID=Tuition.TuitionID WHERE StudentID=%s AND `Transaction`.`Status`=\"UNPAID\" OR `Transaction`.`Status`=\"CANCELLED\"", (student_id))
+        else:
+            cur.execute("SELECT Tuition.*, `Transaction`.`Status` FROM Tuition INNER JOIN `Transaction` ON `Transaction`.TuitionID=Tuition.TuitionID WHERE StudentID=%s AND Semester=%s AND (`Transaction`.`Status`=\"UNPAID\" OR `Transaction`.`Status`=\"CANCELLED\")", (student_id, semester))
         tuitions = cur.fetchall()
         return tuitions
     finally:
         conn.close()
 
 @app.get("/tuitioninfo")
-def get_tuitioninfo_route(student_id: str, current_user: dict = Depends(get_current_active_user)):
+def get_tuitioninfo_route(student_id: str, semester: str = None, current_user: dict = Depends(get_current_active_user)):
     user = current_user
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    student_id = user["StudentID"] 
-    tuition_list = get_tuitioninfo(student_id)
+    tuition_list = get_tuitioninfo(student_id, semester)
 
     if not tuition_list:
         raise HTTPException(status_code=404, detail="No tuition records found")
 
     return {
-        "StudentID": student_id,
-        "FullName": user["FullName"],
-        "Email": user["Email"],
-        "TuitionRecords": [
+        student_id: [
             {
-                "tuitionID": t["tuitionID"],
+                "tuitionID": t["TuitionID"],
                 "Semester": t["Semester"],
                 "Fee": t["Fee"],
                 "BeginDate": t["BeginDate"],
@@ -226,17 +232,138 @@ class VerifyOTPReq(BaseModel):
     email: EmailStr
     otp: str
 
+BLACKLIST: Set[str] = {
+    "000000","111111","222222","333333","444444","555555","666666","777777","888888","999999",
+    "123456","654321","112233","121212","123123","000123","999000","101010","010101"
+}
+
+# --- hàm kiểm tra mẫu ---
+def is_sequential(s: str) -> bool:
+    """True nếu toàn chuỗi là dãy tăng hoặc giảm liên tiếp (ví dụ '1234' hoặc '4321')."""
+    if len(s) < 2:
+        return False
+    inc = all((int(s[i+1]) - int(s[i]) == 1) for i in range(len(s)-1))
+    dec = all((int(s[i]) - int(s[i+1]) == 1) for i in range(len(s)-1))
+    return inc or dec
+
+def max_repeat_length(s: str) -> int:
+    """Độ dài lớn nhất của chữ số lặp liên tiếp (ví dụ '1112' -> 3)."""
+    maxr = 1
+    cur = 1
+    for i in range(1, len(s)):
+        if s[i] == s[i-1]:
+            cur += 1
+            if cur > maxr:
+                maxr = cur
+        else:
+            cur = 1
+    return maxr
+
+def max_run_length(s: str) -> int:
+    """Tìm độ dài lớn nhất của một đoạn con liên tiếp (tăng hoặc giảm)."""
+    n = len(s)
+    if n <= 1:
+        return n
+    maxrun = 1
+    for i in range(n):
+        # kiểm tra chạy từ i sang phải
+        for j in range(i+1, n):
+            sub = s[i:j+1]
+            if is_sequential(sub):
+                if len(sub) > maxrun:
+                    maxrun = len(sub)
+    return maxrun
+
+def is_palindrome(s: str) -> bool:
+    return s == s[::-1]
+
+def is_half_repeat(s: str) -> bool:
+    """Ví dụ 121212 hoặc 123123 (n/2 pattern repeated)."""
+    n = len(s)
+    if n % 2 != 0:
+        return False
+    half = s[:n//2]
+    return half * 2 == s
+
+# --- quy tắc quyết định 'xấu' hay không ---
+def is_ugly_otp(
+    s: str,
+    blacklist: Iterable[str] = BLACKLIST,
+    min_unique_digits: int = 3,
+    max_allowed_repeat: int = 3,
+    max_allowed_run: int = 3
+) -> bool:
+    s = str(s)
+    if not s.isdigit():
+        return False
+    if s in set(blacklist):
+        return False
+    if len(set(s)) < min_unique_digits:
+        return False
+    if max_repeat_length(s) > max_allowed_repeat:
+        return False
+    if max_run_length(s) > max_allowed_run:
+        return False
+    if is_palindrome(s):
+        return False
+    if is_half_repeat(s):
+        return False
+    return True
+
+def inRedis(otp_code: str) -> bool:
+    r = get_redis_connection()
+    for key in r.scan_iter(match="*"):
+        value = r.get(key)
+        if value == otp_code:
+            return True
+    return False
+
 def generate_otp():
-    return str(random.randint(100000,999999))
+    # Tạo mã OTP
+    otp_code = str(random.randint(100000,999999))
+    # Check redis
+    while (not is_ugly_otp(otp_code)) or (inRedis(otp_code)): # Check số đẹp
+        otp_code = str(random.randint(100000,999999))
+    return otp_code
 
 def send_email(email, otp):
-    return 0
-    # Code gửi mã otp qua email
+    # --- Cấu hình ---
+    sender_email = "ngochithuan.dev@gmail.com"
+    app_password = "vtvo qxyq aizl aokx"
+    receiver_email = email
+
+    # --- Tạo nội dung mail ---
+    msg = MIMEMultipart()
+    msg["From"] = sender_email
+    msg["To"] = receiver_email
+    msg["Subject"] = "Xác thực giao dịch - OTP của bạn"
+
+    body = """
+    Xin chào,
+
+    Mã OTP xác thực giao dịch của bạn là: """+ otp +"""
+    OTP này sẽ hết hạn sau 2 phút.
+
+    Trân trọng,
+    Hệ thống E-Bank
+    """
+
+    msg.attach(MIMEText(body, "plain"))
+
+    # --- Gửi email ---
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()  # mã hóa kết nối
+            server.login(sender_email, app_password)
+            server.send_message(msg)
+            print("Email sent successfully!")
+    except Exception as e:
+        print("Error:", e)
 
 @app.post("/sendotp")
 def sendOTP(requestOTP: sendOTPReq, db = Depends(get_db)):
     otp_code = generate_otp()
-    ttl_seconds = 300  #expire in 5 mins
+    ttl_seconds = 160  #expire in 5 mins
 
     r.setex(requestOTP.email, ttl_seconds, otp_code)
 
