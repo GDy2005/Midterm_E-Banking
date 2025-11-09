@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from db_connection import get_connection
+from backend.db_connection import get_connection
 from jose import jwt
 
 app = FastAPI()

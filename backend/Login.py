@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from jose import jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
-from db_connection import get_connection
+from backend.db_connection import get_connection
 
 app = FastAPI()
 

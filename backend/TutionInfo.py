@@ -41,27 +41,27 @@ def get_userinfo(email: str):
         conn.close()
 
 # ====== Lấy học phí theo StudentID (liên kết theo Email) ======
-def get_tutioninfo(student_id: int):
+def get_tuitioninfo(student_id: int):
     conn = get_connection()
     try:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM Tution WHERE StudentID=%s", (student_id,))
-        tutions = cur.fetchall()
-        return tutions
+        cur.execute("SELECT * FROM tuition WHERE StudentID=%s", (student_id,))
+        tuitions = cur.fetchall()
+        return tuitions
     finally:
         conn.close()
 
 # ====== Endpoint ======
-@app.get("/tutioninfo")
-def get_tutioninfo_route(current_user_email: str = Depends(get_current_email)):
+@app.get("/tuitioninfo")
+def get_tuitioninfo_route(current_user_email: str = Depends(get_current_email)):
     user = get_userinfo(current_user_email)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
     student_id = user["StudentID"] 
-    tution_list = get_tutioninfo(student_id)
+    tuition_list = get_tuitioninfo(student_id)
 
-    if not tution_list:
+    if not tuition_list:
         raise HTTPException(status_code=404, detail="No tuition records found")
 
     return {
@@ -70,12 +70,12 @@ def get_tutioninfo_route(current_user_email: str = Depends(get_current_email)):
         "Email": user["Email"],
         "TuitionRecords": [
             {
-                "TutionID": t["TutionID"],
+                "tuitionID": t["tuitionID"],
                 "Semester": t["Semester"],
                 "Fee": t["Fee"],
                 "BeginDate": t["BeginDate"],
                 "EndDate": t["EndDate"],
             }
-            for t in tution_list
+            for t in tuition_list
         ]
     }

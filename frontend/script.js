@@ -132,5 +132,30 @@ async function loadUserInfo() {
 
 document.addEventListener("DOMContentLoaded", loadUserInfo);
 
+//Update Invoice 
+async function fillStudentName() {
+    const student_id = document.getElementById("student_id").value.trim();
 
+    if (!student_id) {
+        return;
+    }
+
+    try {
+        const res = await fetch(`http://127.0.0.1:8000/student/studentinfo?student_id=${student_id}`, {
+            method: "GET"
+        });
+
+        if (!res.ok) {
+            console.error("Failed to fetch student info");
+            document.getElementById("student_name").value = "";
+        }
+
+        const student = await res.json(); 
+
+        document.getElementById("student_name").value = student.FullName;
+
+    } catch (err) {
+        console.error(err);
+    }
+}
 

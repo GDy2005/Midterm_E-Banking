@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from pydantic import BaseModel, EmailStr
 from datetime import timedelta
-from db_connection import get_db
+from backend.db_connection import get_db
 
 import random, smtplib, redis
 

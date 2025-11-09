@@ -15,15 +15,12 @@
             </div>
 
             <div class="nav-center">
-                <a class="nav-item">Home</a>
                 <a class="nav-item active" data-target="payment-page">Payments</a>
                 <a class="nav-item" data-target="transaction-page">Transactions</a>
-                <a class="nav-item" data-target="invest-page">Investments</a>
-                <a class="nav-item">Notification</a>
             </div>
 
             <div class="nav-right">
-                <a href="#"  class="nav-item">Settings</a>
+                <a href="#"  class="nav-item">Log out</a>
             </div>
         </nav>
 
@@ -33,11 +30,6 @@
                 <div class="left-col">
                     <div class="userInfo-box">
                         <h2>User Infomation</h2>
-                            User Info
-                        </div>
-
-                    <div class="note-info">
-                        Các lưu ý:
                     </div>
                 </div>
 
@@ -47,12 +39,12 @@
                     <div class="tuition-box">
                         <div class="tuition-item">
                             <label>Student ID:</label>
-                            <input type="text" placeholder="Student ID">
+                            <input type="text" placeholder="Student ID" id="student_id">
                         </div>
 
                         <div class="tuition-item">
                             <label>Name:</label>
-                            <input type="text" placeholder="Student Name" disabled>
+                            <input type="text" placeholder="Student Name" id="student_name" disabled>
                         </div>
 
                         <div class="tuition-item">
@@ -136,15 +128,6 @@
                         Thông tin giao dịch
                     </div>
             </div>
-
-            <!-- Investment Section -->
-            <div id="invest-page" class="transaction-page hidden">
-                <h2>UI Đầu tư</h2>
-                <p>Đây là phần Investment.</p>
-            </div>
-        </div>
-        <div>
-
         </div>
     </div>
 </body>
