@@ -4,7 +4,7 @@ def get_connection():
     return pymysql.connect(
         host="localhost",
         user="root",
-        password="",
+        password="123456",
         database="db_ebank",
         cursorclass=pymysql.cursors.DictCursor
     )

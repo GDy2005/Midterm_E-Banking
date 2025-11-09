@@ -6,7 +6,7 @@ async function login(event) {
     const password = document.getElementById("password").value;
 
     try {
-        const response = await fetch("http://127.0.0.1:8000/auth/login", {
+        const response = await fetch("http://127.0.0.1:8000/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password })
@@ -59,7 +59,7 @@ async function loadUserInfo() {
     if (!token) return;
 
     try {
-        const res = await fetch("http://127.0.0.1:8000/user/userinfo", {
+        const res = await fetch("http://127.0.0.1:8000/userinfo", {
             method: "GET",
             headers: { "Authorization": `Bearer ${token}` }
         });
@@ -137,25 +137,34 @@ async function fillStudentName() {
     const student_id = document.getElementById("student_id").value.trim();
 
     if (!student_id) {
+        document.getElementById("student_name").value = "";
+        document.getElementById("studentinfo-id").innerText = "";
+        document.getElementById("studentinfo-name").innerText ="";
+        document.getElementById("studentinfo-email").innerText = "";
         return;
     }
 
     try {
-        const res = await fetch(`http://127.0.0.1:8000/student/studentinfo?student_id=${student_id}`, {
+        const res = await fetch(`http://127.0.0.1:8000/studentinfo?student_id=${student_id}`, {
             method: "GET"
-        });
+        });     
 
         if (!res.ok) {
             console.error("Failed to fetch student info");
             document.getElementById("student_name").value = "";
+            return;
         }
 
         const student = await res.json(); 
+        
+        // Fill student info
+        document.getElementById("student_name").value = student.FullName || "";
 
-        document.getElementById("student_name").value = student.FullName;
-
+        document.getElementById("studentinfo-id").innerText = student.StudentID || "";
+        document.getElementById("studentinfo-name").innerText = student.FullName || "";
+        document.getElementById("studentinfo-email").innerText = student.Email || "";
     } catch (err) {
         console.error(err);
+        document.getElementById("student_name").value = "";
     }
 }
-
