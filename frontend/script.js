@@ -6,7 +6,7 @@ async function login(event) {
     const password = document.getElementById("password").value;
 
     try {
-        const response = await fetch("http://127.0.0.1:8000/auth/login", {
+        const response = await fetch("http://127.0.0.1:8000/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password })
@@ -59,7 +59,7 @@ async function loadUserInfo() {
     if (!token) return;
 
     try {
-        const res = await fetch("http://127.0.0.1:8000/user/userinfo", {
+        const res = await fetch("http://127.0.0.1:8000/userinfo", {
             method: "GET",
             headers: { "Authorization": `Bearer ${token}` }
         });
@@ -132,30 +132,89 @@ async function loadUserInfo() {
 
 document.addEventListener("DOMContentLoaded", loadUserInfo);
 
-//Update Invoice 
-async function fillStudentName() {
+//Update Infomation 
+async function Autofill_StudentInfo() {
     const student_id = document.getElementById("student_id").value.trim();
 
     if (!student_id) {
+        document.getElementById("student_name").value = "";
+        document.getElementById("studentinfo-id").innerText = "---";
+        document.getElementById("studentinfo-name").innerText = "---";
+        document.getElementById("studentinfo-email").innerText = "---";
         return;
     }
 
     try {
-        const res = await fetch(`http://127.0.0.1:8000/student/studentinfo?student_id=${student_id}`, {
+        const res_student = await fetch(`http://127.0.0.1:8000/studentinfo?student_id=${student_id}`, {
             method: "GET"
         });
 
-        if (!res.ok) {
-            console.error("Failed to fetch student info");
-            document.getElementById("student_name").value = "";
-        }
+        if (!res_student.ok) throw new Error("Failed to fetch student info");
 
-        const student = await res.json(); 
+        const student = await res_student.json();
 
-        document.getElementById("student_name").value = student.FullName;
+        document.getElementById("student_name").value = student.FullName || "";
+        document.getElementById("studentinfo-id").innerText = student.StudentID || "";
+        document.getElementById("studentinfo-name").innerText = student.FullName || "";
+        document.getElementById("studentinfo-email").innerText = student.Email || "";
 
     } catch (err) {
         console.error(err);
+        document.getElementById("student_name").value = "";
+        document.getElementById("studentinfo-id").innerText = "---";
+        document.getElementById("studentinfo-name").innerText = "---";
+        document.getElementById("studentinfo-email").innerText = "---";
     }
 }
 
+async function Autofill_TuitionInfo() {
+    const student_id = document.getElementById("student_id").value.trim();
+    const semester = document.getElementById("semester").value.trim();
+    const token = localStorage.getItem("token");
+
+    if (!student_id || !semester) {
+        document.getElementById("show-fee").value = "";
+        document.getElementById("tuitioninfo-id").innerText = "---";
+        document.getElementById("tuitioninfo-semester").innerText = "---";
+        document.getElementById("tuitioninfo-start").innerText = "---";
+        document.getElementById("tuitioninfo-end").innerText = "---";
+        document.getElementById("tuitioninfo-fee").innerText = "---";
+        return;
+    }
+
+    if (!token) {
+        alert("Please log in first.");
+        return;
+    }
+
+    try {
+        const res_tuition = await fetch(`http://127.0.0.1:8000/tuitioninfo?student_id=${student_id}&semester=${semester}`, {
+            method: "GET",
+            headers: { "Authorization": `Bearer ${token}` }
+        }
+    );
+
+        if (!res_tuition.ok) {
+            const err = await res_tuition.json();
+            throw new Error(err.detail || "Failed to fetch tuition info");
+        }
+
+        const tuitioninfo = await res_tuition.json();
+
+        document.getElementById("show-fee").value = tuitioninfo.Fee || "";
+        document.getElementById("tuitioninfo-id").innerText = tuitioninfo.TuitionID || "";
+        document.getElementById("tuitioninfo-semester").innerText = tuitioninfo.Semester || "";
+        document.getElementById("tuitioninfo-start").innerText = tuitioninfo.BeginDate || "";
+        document.getElementById("tuitioninfo-end").innerText = tuitioninfo.EndDate || "";
+        document.getElementById("tuitioninfo-fee").innerText = tuitioninfo.Fee || "";
+
+    } catch (err) {
+        console.error(err);
+        document.getElementById("show-fee").value = "";
+        document.getElementById("tuitioninfo-id").innerText = "---";
+        document.getElementById("tuitioninfo-semester").innerText = "---";
+        document.getElementById("tuitioninfo-start").innerText = "---";
+        document.getElementById("tuitioninfo-end").innerText = "---";
+        document.getElementById("tuitioninfo-fee").innerText = "---";
+    }
+}

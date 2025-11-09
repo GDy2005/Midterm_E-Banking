@@ -17,7 +17,7 @@ CREATE TABLE Customer (
 );
 
 CREATE TABLE Student (
-    StudentID INT NOT NULL,
+    StudentID VARCHAR(20) NOT NULL,
     FullName VARCHAR(50) CHARACTER SET utf8mb4 NOT NULL,
     Email VARCHAR(50) NOT NULL,
     
@@ -25,39 +25,53 @@ CREATE TABLE Student (
 );
 
 CREATE TABLE Tuition (
-    TuitionID INT NOT NULL AUTO_INCREMENT,
-    StudentID INT NOT NULL,
+    TutionID INT NOT NULL AUTO_INCREMENT,
+    StudentID VARCHAR(20) NOT NULL,
     Semester VARCHAR(25) CHARACTER SET utf8mb4 NOT NULL,
     Fee INT NOT NULL DEFAULT 0,
     BeginDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     EndDate TIMESTAMP NOT NULL,
     
-    CONSTRAINT PK_Tuition PRIMARY KEY(TuitionID),
+    CONSTRAINT PK_Tution PRIMARY KEY(TutionID),
     CONSTRAINT CHK_Fee CHECK (Fee >= 0),
-    CONSTRAINT FK_Tuition_Student FOREIGN KEY (StudentID) REFERENCES Student(StudentID)
+    CONSTRAINT FK_Tution_Student FOREIGN KEY (StudentID) REFERENCES Student(StudentID)
 );
 
 CREATE TABLE `Transaction` (
     TransactionID INT NOT NULL AUTO_INCREMENT,
     CustomerID INT NOT NULL,
-    TuitionID INT NOT NULL,
+    TutionID INT NOT NULL,
     PaidAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     `Status` ENUM('PAID','UNPAID','CANCELLED') NOT NULL,
     
     CONSTRAINT PK_Transaction PRIMARY KEY(TransactionID),
     CONSTRAINT FK_Transaction_Customer FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID),
-    CONSTRAINT FK_Transaction_Tuition FOREIGN KEY (TuitionID) REFERENCES Tuition(TuitionID)
+    CONSTRAINT FK_Transaction_Tution FOREIGN KEY (TutionID) REFERENCES Tuition(TutionID)
 );
 
 -- Values 
 INSERT INTO Customer (UserName, HashPassword, FullName, Balance, Email, PhoneNumber)
 VALUES
-('Gia Duy', 'admin123', 'Mạch Lê Gia Duy', 50000000, 'machlegiaduy2005@gmail.com', '0912345678'),
-('Chi Thuan', 'admin123', 'Ngô Chí Thuận', 30000000, 'ngochithuan.dev@gmail.com', '0987654321'),
-('Cao Duy', 'admin123', 'Cao Văn Duy', 10000000, 'hoa@gmail.com', '0901122334');
+('Gia Duy', 'admin123', 'Mạch Lê Gia Duy', 5000000, 'machlegiaduy2005@gmail.com', '0912345678'),
+('Chi Thuan', 'admin123', 'Ngô Chí Thuận', 3000000, 'ngochithuan.dev@gmail.com', '0987654321'),
+('Cao Duy', 'admin123', 'Cao Văn Duy', 100000000, 'hoa@gmail.com', '0901122334');
 
 INSERT INTO Student (StudentID, FullName, Email)
 VALUES
-(1, 'Mạch Lê Gia Duy', '523h0019@student.tdtu.edu.vn'),
-(2, 'Ngô Chí Thuận', '523h0102@student.tdtu.edu.vn'),
-(3, 'Le Hoa', 'hoa@student.com');
+("1", 'Mạch Lê Gia Duy', 'machlegiaduy2005@gmail.com'),
+("2", 'Ngô Chí Thuận', 'ngochithuan.dev@student.com'),
+("3", 'Lê Nguyễn Cao Duy', 'hoa@student.com');
+
+INSERT INTO Tuition (StudentID, Semester, Fee, EndDate)
+VALUES
+("1", 'Semester-1_2025-2026', 1500000, '2025-12-31 23:59:59'),
+("2", 'Semester-1_2025-2026', 2000000, '2025-12-31 23:59:59'),
+("3", 'Semester-2_2025-2026', 2500000, '2025-12-31 23:59:59');
+
+INSERT INTO `Transaction` (CustomerID, TuitionID, `Status`)
+VALUES
+(1, 1, 'UNPAID'),
+(2, 2, 'PAID'),
+(3, 3, 'CANCELLED');
+
+select * from customer

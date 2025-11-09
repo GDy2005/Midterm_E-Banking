@@ -39,7 +39,7 @@
                     <div class="tuition-box">
                         <div class="tuition-item">
                             <label>Student ID:</label>
-                            <input type="text" placeholder="Student ID" id="student_id">
+                            <input type="text" placeholder="Student ID" id="student_id" oninput="Autofill_StudentInfo()">
                         </div>
 
                         <div class="tuition-item">
@@ -49,18 +49,13 @@
 
                         <div class="tuition-item">
                             <label>Semester:</label>
-                            <input type="text" placeholder="">
+                            <input type="text" placeholder="" id="semester" oninput="Autofill_TuitionInfo()">
                         </div>
 
 
                         <div class="tuition-item">
                             <label>Fee:</label>
-                            <input type="number" placeholder="" disabled>
-                        </div>
-
-                        <div class="tuition-item">
-                            <label>Ghi chú:</label>
-                            <textarea rows="3" placeholder="Nhập ghi chú (nếu có)"></textarea>
+                            <input type="number" placeholder="" id="show-fee" disabled>
                         </div>
 
                     </div>
@@ -74,35 +69,35 @@
                     <div class="invoice-box">
                         <div class="info-row">
                             <span class="label">Tuition ID:</span>
-                            <span id="tuitionId">---</span>
+                            <span id="tuitioninfo-id">---</span>
                         </div>
                         <div class="info-row">
                             <span class="label">Semester:</span>
-                            <span id="semester">---</span>
+                            <span id="tuitioninfo-semester">---</span>
                         </div>
                         <div class="info-row">
                             <span class="label">Date Start:</span>
-                            <span id="dateStart">---</span>
+                            <span id="tuitioninfo-start">---</span>
                         </div>
                         <div class="info-row">
                             <span class="label">Date End:</span>
-                            <span id="dateEnd">---</span>
+                            <span id="tuitioninfo-end">---</span>
                         </div>
                         <div class="info-row">
                             <span class="label">Student ID:</span>
-                            <span id="studentId">---</span>
+                            <span id="studentinfo-id">---</span>
                         </div>
                         <div class="info-row">
                             <span class="label">Name:</span>
-                            <span id="studentName">---</span>
+                            <span id="studentinfo-name">---</span>
                         </div>
                         <div class="info-row">
                             <span class="label">Email:</span>
-                            <span id="studentEmail">---</span>
+                            <span id="studentinfo-email">---</span>
                         </div>
                         <div class="info-row">
                             <span class="label">Fee:</span>
-                            <span id="fee">---</span>
+                            <span id="tuitioninfo-fee">---</span>
                         </div>
                     </div>
                 </div>
