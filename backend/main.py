@@ -1,12 +1,14 @@
-from fastapi import FastAPI, HTTPException, Header, Depends, status, Request
+from fastapi import FastAPI, HTTPException, Header, Depends, status, Request, Body
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr
+import pymysql.cursors
 from backend.db_connection import get_connection, get_db
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 import random, smtplib, redis
 from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI()
 
@@ -158,7 +160,14 @@ def get_tuitioninfo(student_id: int, semester: str = None):
     conn = get_connection()
     try:
         cur = conn.cursor()
+<<<<<<< Updated upstream
         cur.execute("SELECT * FROM tuition WHERE Student.StudentID=Tuition.StudentID AND Tuition.Tuition.TuitionID=Transaction AND StudentID=%s AND Semester=%s", (student_id, semester))
+=======
+        if semester is None:
+            cur.execute("SELECT Tuition.*, `Transaction`.`Status` FROM Tuition INNER JOIN `Transaction` ON `Transaction`.TuitionID=Tuition.TuitionID WHERE StudentID=%s AND (`Transaction`.`Status`=\"UNPAID\" OR `Transaction`.`Status`=\"CANCELLED\")", (student_id))
+        else:
+            cur.execute("SELECT Tuition.*, `Transaction`.`Status` FROM Tuition INNER JOIN `Transaction` ON `Transaction`.TuitionID=Tuition.TuitionID WHERE StudentID=%s AND Semester=%s AND (`Transaction`.`Status`=\"UNPAID\" OR `Transaction`.`Status`=\"CANCELLED\")", (student_id, semester))
+>>>>>>> Stashed changes
         tuitions = cur.fetchall()
         return tuitions
     finally:
@@ -169,7 +178,11 @@ def get_tuitioninfo_route(student_id: str, current_user: dict = Depends(get_curr
     user = current_user
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    
+    if semester is None:
+        tuition_list = get_tuitioninfo(student_id, semester)
 
+<<<<<<< Updated upstream
     student_id = user["StudentID"] 
     tuition_list = get_tuitioninfo(student_id)
 
@@ -191,6 +204,39 @@ def get_tuitioninfo_route(student_id: str, current_user: dict = Depends(get_curr
             for t in tuition_list
         ]
     }
+=======
+        if not tuition_list:
+            raise HTTPException(status_code=404, detail="No tuition records found")
+
+        return {
+            student_id: [
+                {
+                    "TuitionID": t["TuitionID"],
+                    "Semester": t["Semester"],
+                    "Fee": t["Fee"],
+                    "BeginDate": t["BeginDate"],
+                    "EndDate": t["EndDate"],
+                    "Status": t["Status"]
+                } for t in tuition_list
+            ]
+        }
+    else:
+        tuition = get_tuitioninfo(student_id, semester)
+        if not tuition:
+            raise HTTPException(status_code=404, detail="No tuition record found for this semester")
+        
+        # Lấy Tuition Info ra khỏi List of Tution
+        tuition = tuition[0]
+        
+        return {
+            "TuitionID": tuition["TuitionID"],
+            "StudentID": tuition["StudentID"],
+            "Semester": tuition["Semester"],
+            "BeginDate": tuition["BeginDate"],
+            "EndDate": tuition["EndDate"],
+            "Fee": tuition["Fee"]
+        }
+>>>>>>> Stashed changes
 
 # ====== Lấy Student Info từ DB ======
 def get_studentinfo(student_id: str):
@@ -215,38 +261,146 @@ def get_studentinfo_route(student_id: str):
         "Email": student["Email"]
     }
 
+# ====== Transaction API ======
+class createTransactionReq(BaseModel):
+    customerID: int
+    tuitionID: int
 
-r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+@app.post("/createtransaction")
+def createTransaction(createTransReq: createTransactionReq, db = Depends(get_db)):
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+
+        # Kiểm tra transaction hiện có cho TuitionID
+        cur.execute("""
+            SELECT TransactionID, CustomerID, `Status`
+            FROM `Transaction`
+            WHERE TuitionID = %s
+            ORDER BY TransactionID DESC
+            LIMIT 1
+        """, (createTransReq.tuitionID,))
+        existing_tx = cur.fetchone()
+
+        # Nếu đã có transaction
+        if existing_tx:
+            status = existing_tx["Status"]
+
+            if status == "PAID":
+                return {"message": "Tuition already paid. Cannot create new transaction."}
+
+            elif (status == "CANCELLED") or (status == "UNPAID"):
+                # Cập nhật transaction bị hủy thành pending + đổi CustomerID
+                cur.execute("""
+                    UPDATE `Transaction`
+                    SET CustomerID = %s, `Status` = 'PENDING'
+                    WHERE TransactionID = %s
+                """, (createTransReq.customerID, existing_tx["TransactionID"]))
+                conn.commit()
+                return {"message": "Existing cancelled transaction reactivated (pending)."}
+
+            elif status == "PENDING":
+                return {"message": "Transaction already pending for this tuition."}
+
+        # Nếu chưa có transaction → tạo mới
+        cur.execute("""
+            INSERT INTO `Transaction` (CustomerID, TuitionID, `Status`)
+            VALUES (%s, %s, 'PENDING')
+        """, (createTransReq.customerID, createTransReq.tuitionID))
+        conn.commit()
+
+        return {"message": "New transaction created successfully."}
+
+    finally:
+        conn.close()
+
 
 # ====== OTP API ======
-class sendOTPReq(BaseModel):
-    email: EmailStr
 
-class VerifyOTPReq(BaseModel):
-    email: EmailStr
-    otp: str
 
 def generate_otp():
     return str(random.randint(100000,999999))
 
+<<<<<<< Updated upstream
 def send_email(email, otp):
     return 0
     # Code gửi mã otp qua email
+=======
+
+def send_otp_email(email, otp):
+    # --- Cấu hình ---
+    sender_email = "ngochithuan.dev@gmail.com"
+    app_password = "vtvo qxyq aizl aokx"
+    receiver_email = email
+
+    # --- Tạo nội dung mail ---
+    msg = MIMEMultipart()
+    msg["From"] = sender_email
+    msg["To"] = receiver_email
+    msg["Subject"] = "Xác thực giao dịch - OTP của bạn"
+
+    body = """
+    Xin chào,
+
+    Mã OTP xác thực giao dịch của bạn là: """+ otp +"""
+    OTP này sẽ hết hạn sau 5 phút.
+
+    Trân trọng,
+    Hệ thống E-Bank
+    """
+
+    msg.attach(MIMEText(body, "plain"))
+
+    # --- Gửi email ---
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()  # mã hóa kết nối
+            server.login(sender_email, app_password)
+            server.send_message(msg)
+            print("Email sent successfully!")
+    except Exception as e:
+        print("Error:", e)
+>>>>>>> Stashed changes
+
+class sendOTPReq(BaseModel):
+    customer_id: int
+    transaction_id: int
+    tuition_id: int
+    email: EmailStr
+
+class VerifyOTPReq(BaseModel):
+    customer_id: int
+    transaction_id: int
+    tuition_id: int
+    email: EmailStr
+    otp: str
+
 
 @app.post("/sendotp")
-def sendOTP(requestOTP: sendOTPReq, db = Depends(get_db)):
+def sendOTP(requestOTP: sendOTPReq = Body(...)):
     otp_code = generate_otp()
+<<<<<<< Updated upstream
     ttl_seconds = 300  #expire in 5 mins
+=======
+    ttl_seconds = 160  #expire in 5 mins
+    key = str(requestOTP.customer_id) + ":" + str(requestOTP.transaction_id) + ":" + str(requestOTP.tuition_id)
+    r = get_redis_connection()
+    
+    r.setex(key, ttl_seconds, otp_code)
+>>>>>>> Stashed changes
 
-    r.setex(requestOTP.email, ttl_seconds, otp_code)
+    send_otp_email(requestOTP.email, otp_code)
 
-    send_email(requestOTP.email, otp_code)
-
-    return {"message": "Vui lòng xác thực mã xác nhận vừa gửi trong email bạn"}
+    return {"message": "OTP created & sent successfully"}
 
 @app.post("/verifyotp")
-def verifyOTP(requestOTP: VerifyOTPReq, db = Depends(get_db)):
-    otp_stored = r.get(requestOTP.email)
+def verifyOTP(requestOTP: VerifyOTPReq = Body(...)):
+    key = str(requestOTP.customer_id) + ":" + str(requestOTP.transaction_id) + ":" + str(requestOTP.tuition_id)
+    
+    
+    r = get_redis_connection()
+    otp_stored = r.get(key)
+    otp_stored = otp_stored if otp_stored else None
 
     if not otp_stored:
         raise HTTPException(status_code=404, detail="OTP expired or not found")
@@ -254,6 +408,21 @@ def verifyOTP(requestOTP: VerifyOTPReq, db = Depends(get_db)):
     if otp_stored != requestOTP.otp:
         raise HTTPException(status_code=400, detail="Invalid OTP")
     
-    r.delete(requestOTP.email)
+    conn = get_connection()
+    try:
+        cur = conn.cursor(pymysql.cursors.DictCursor)
+        cur.execute("SELECT * FROM Tuition INNER JOIN `Transaction` ON Tuition.TuitionID=`Transaction`.TuitionID WHERE `Transaction`.TransactionID=%s", (requestOTP.transaction_id,))
 
-    return {"message": "OTP verified successfully"}
+        tuition = cur.fetchone()
+        fee = tuition["Fee"]
+        cur.execute("UPDATE Customer SET Balance=Balance-%s WHERE CustomerID=%s", (fee, requestOTP.customer_id,))
+        cur.execute("UPDATE `Transaction` SET `Status`=\"PAID\" WHERE TransactionID=%s", (requestOTP.transaction_id,))
+        conn.commit()
+        r.delete(key)
+        return {"message": "OTP verified successfully"}
+    except Exception as e:
+        print("ERROR:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+

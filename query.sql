@@ -62,4 +62,29 @@ VALUES
 ("2", 'Ngô Chí Thuận', 'ngochithuan.dev@student.com'),
 ("3", 'Lê Nguyễn Cao Duy', 'hoa@student.com');
 
+<<<<<<< Updated upstream
 select * from customer
+=======
+INSERT INTO Tuition (StudentID, Semester, Fee, EndDate)
+VALUES
+("1", 'Semester1-2025-2026', 1500000, '2025-12-31 23:59:59'),
+("1", 'Semester2-2025-2026', 1500000, '2025-12-31 23:59:59'),
+("2", 'Semester1-2025-2026', 2000000, '2025-12-31 23:59:59'),
+("2", 'Semester2-2025-2026', 2000000, '2025-12-31 23:59:59'),
+("3", 'Semester2-2025-2026', 2500000, '2025-12-31 23:59:59');
+
+INSERT INTO `Transaction` (CustomerID, TuitionID, `Status`)
+VALUES
+(1, 1, 'UNPAID'),
+(2, 2, 'PAID'),
+(3, 3, 'CANCELLED');
+-- DROP TABLE `Transaction`;
+-- DROP TABLE Tuition;
+-- DROP TABLE Student;
+-- DROP TABLE Customer;
+-- DROP DATABASE db_ebank;
+
+-- SELECT * FROM Customer;
+-- SELECT * FROM Tuition;
+-- SELECT * FROM Transaction;
+>>>>>>> Stashed changes

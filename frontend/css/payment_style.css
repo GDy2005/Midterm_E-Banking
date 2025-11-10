@@ -213,7 +213,7 @@ body {
     color: white;
     border: none;
     border-radius: 8px;
-    font-size: 16px;
+    font-size: 20px;
     cursor: pointer;
     transition: 0.2s;
 }
@@ -229,4 +229,104 @@ body {
     font-size: 1rem;
     padding: 6px 0;
     border-bottom: 1px solid #eee;
+}
+
+.otp-popup {
+  position: fixed;
+  inset: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0,0,0,0.45);
+  z-index: 9999;
+  padding: 20px;
+}
+
+.otp-popup.visible {
+  display: flex;
+}
+
+.otp-popup .otp-box {
+  position: relative;
+  background: #fff;
+  border-radius: 16px;
+  padding: 30px 24px;
+  width: 360px;
+  max-width: 95%;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+
+/* ❌ Nút X góc trên bên phải */
+.close-otp {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 22px;
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+}
+.close-otp:hover {
+  color: #000;
+}
+
+/* Các ô nhập OTP */
+.otp-popup .otp-inputs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 18px 0 22px;
+}
+.otp-popup .otp-inputs input {
+  width: 44px;
+  height: 48px;
+  text-align: center;
+  font-size: 20px;
+  border-radius: 8px;
+  border: 2px solid #ddd;
+  transition: 0.2s;
+}
+.otp-popup .otp-inputs input:focus {
+  border-color: #6a5acd;
+  outline: none;
+}
+
+/* Nút Confirm chính */
+#confirmOtpBtn {
+  width: 100%;
+  padding: 10px 12px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  background: #6a5acd;
+  color: #fff;
+  transition: background 0.2s ease-in-out;
+}
+#confirmOtpBtn:hover {
+  background: #5a4ac7;
+}
+
+/* 🔁 Nút Resend OTP và thông báo */
+.resend-btn {
+  background: none;
+  border: none;
+  color: #6a5acd;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 10px;
+}
+.resend-btn:disabled {
+  color: #aaa;
+  text-decoration: none;
+  cursor: default;
+}
+.resend-msg {
+  margin-top: 5px;
+  font-size: 13px;
+  color: #555;
 }
