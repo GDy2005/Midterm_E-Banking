@@ -1,13 +1,23 @@
 from fastapi import FastAPI, HTTPException, Header, Depends, status, Request, Body
+
+from datetime import datetime  # already imported in your file; kept for clarity
+import pymysql.cursors
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr
 import pymysql.cursors
 from backend.db_connection import get_connection, get_db
+from backend.redis_connection import get_redis_connection
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 import random, smtplib, redis
 from fastapi.middleware.cors import CORSMiddleware
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import secrets
+import string
+from typing import List, Iterable, Set
 
 
 app = FastAPI()
@@ -156,25 +166,21 @@ def get_userinfo_route(current_user: dict = Depends(get_current_active_user)):
     }
 
 # ====== TUITION API ======
-def get_tuitioninfo(student_id: int, semester: str = None):
+def get_tuitioninfo(student_id: str, semester: str = None):
     conn = get_connection()
     try:
         cur = conn.cursor()
-<<<<<<< Updated upstream
-        cur.execute("SELECT * FROM tuition WHERE Student.StudentID=Tuition.StudentID AND Tuition.Tuition.TuitionID=Transaction AND StudentID=%s AND Semester=%s", (student_id, semester))
-=======
         if semester is None:
-            cur.execute("SELECT Tuition.*, `Transaction`.`Status` FROM Tuition INNER JOIN `Transaction` ON `Transaction`.TuitionID=Tuition.TuitionID WHERE StudentID=%s AND (`Transaction`.`Status`=\"UNPAID\" OR `Transaction`.`Status`=\"CANCELLED\")", (student_id))
+            cur.execute("SELECT Tuition.*, `Transaction`.`TransactionID`, `Transaction`.`Status` FROM Tuition INNER JOIN `Transaction` ON `Transaction`.TuitionID=Tuition.TuitionID WHERE StudentID=%s AND (`Transaction`.`Status`=\"UNPAID\" OR `Transaction`.`Status`=\"CANCELLED\" OR `Transaction`.`Status`=\"PENDING\")", (student_id))
         else:
-            cur.execute("SELECT Tuition.*, `Transaction`.`Status` FROM Tuition INNER JOIN `Transaction` ON `Transaction`.TuitionID=Tuition.TuitionID WHERE StudentID=%s AND Semester=%s AND (`Transaction`.`Status`=\"UNPAID\" OR `Transaction`.`Status`=\"CANCELLED\")", (student_id, semester))
->>>>>>> Stashed changes
+            cur.execute("SELECT Tuition.*, `Transaction`.`TransactionID`, `Transaction`.`Status` FROM Tuition INNER JOIN `Transaction` ON `Transaction`.TuitionID=Tuition.TuitionID WHERE StudentID=%s AND Semester=%s AND (`Transaction`.`Status`=\"UNPAID\" OR `Transaction`.`Status`=\"CANCELLED\" OR `Transaction`.`Status`=\"PENDING\")", (student_id, semester))
         tuitions = cur.fetchall()
         return tuitions
     finally:
         conn.close()
 
 @app.get("/tuitioninfo")
-def get_tuitioninfo_route(student_id: str, current_user: dict = Depends(get_current_active_user)):
+def get_tuitioninfo_route(student_id: str, semester: str = None, current_user: dict = Depends(get_current_active_user)):
     user = current_user
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -182,29 +188,6 @@ def get_tuitioninfo_route(student_id: str, current_user: dict = Depends(get_curr
     if semester is None:
         tuition_list = get_tuitioninfo(student_id, semester)
 
-<<<<<<< Updated upstream
-    student_id = user["StudentID"] 
-    tuition_list = get_tuitioninfo(student_id)
-
-    if not tuition_list:
-        raise HTTPException(status_code=404, detail="No tuition records found")
-
-    return {
-        "StudentID": student_id,
-        "FullName": user["FullName"],
-        "Email": user["Email"],
-        "TuitionRecords": [
-            {
-                "tuitionID": t["tuitionID"],
-                "Semester": t["Semester"],
-                "Fee": t["Fee"],
-                "BeginDate": t["BeginDate"],
-                "EndDate": t["EndDate"],
-            }
-            for t in tuition_list
-        ]
-    }
-=======
         if not tuition_list:
             raise HTTPException(status_code=404, detail="No tuition records found")
 
@@ -212,6 +195,7 @@ def get_tuitioninfo_route(student_id: str, current_user: dict = Depends(get_curr
             student_id: [
                 {
                     "TuitionID": t["TuitionID"],
+                    "TransactionID": t["TransactionID"],
                     "Semester": t["Semester"],
                     "Fee": t["Fee"],
                     "BeginDate": t["BeginDate"],
@@ -230,13 +214,13 @@ def get_tuitioninfo_route(student_id: str, current_user: dict = Depends(get_curr
         
         return {
             "TuitionID": tuition["TuitionID"],
+            "TransactionID": tuition["TransactionID"],
             "StudentID": tuition["StudentID"],
             "Semester": tuition["Semester"],
             "BeginDate": tuition["BeginDate"],
             "EndDate": tuition["EndDate"],
             "Fee": tuition["Fee"]
         }
->>>>>>> Stashed changes
 
 # ====== Lấy Student Info từ DB ======
 def get_studentinfo(student_id: str):
@@ -305,11 +289,17 @@ def createTransaction(createTransReq: createTransactionReq, db = Depends(get_db)
         # Nếu chưa có transaction → tạo mới
         cur.execute("""
             INSERT INTO `Transaction` (CustomerID, TuitionID, `Status`)
-            VALUES (%s, %s, 'PENDING')
+            VALUES (%s, %s, 'PENDING');
         """, (createTransReq.customerID, createTransReq.tuitionID))
+
+        cur.execute("""
+            select last_insert_id();
+        """)
+
+        transaction_id = cur.fetchone()
         conn.commit()
 
-        return {"message": "New transaction created successfully."}
+        return {"transaction_id": transaction_id}
 
     finally:
         conn.close()
@@ -318,14 +308,100 @@ def createTransaction(createTransReq: createTransactionReq, db = Depends(get_db)
 # ====== OTP API ======
 
 
-def generate_otp():
-    return str(random.randint(100000,999999))
+BLACKLIST: Set[str] = {
+    "000000","111111","222222","333333","444444","555555","666666","777777","888888","999999",
+    "123456","654321","112233","121212","123123","000123","999000","101010","010101"
+}
 
-<<<<<<< Updated upstream
-def send_email(email, otp):
-    return 0
-    # Code gửi mã otp qua email
-=======
+# --- hàm kiểm tra mẫu ---
+def is_sequential(s: str) -> bool:
+    """True nếu toàn chuỗi là dãy tăng hoặc giảm liên tiếp (ví dụ '1234' hoặc '4321')."""
+    if len(s) < 2:
+        return False
+    inc = all((int(s[i+1]) - int(s[i]) == 1) for i in range(len(s)-1))
+    dec = all((int(s[i]) - int(s[i+1]) == 1) for i in range(len(s)-1))
+    return inc or dec
+
+def max_repeat_length(s: str) -> int:
+    """Độ dài lớn nhất của chữ số lặp liên tiếp (ví dụ '1112' -> 3)."""
+    maxr = 1
+    cur = 1
+    for i in range(1, len(s)):
+        if s[i] == s[i-1]:
+            cur += 1
+            if cur > maxr:
+                maxr = cur
+        else:
+            cur = 1
+    return maxr
+
+def max_run_length(s: str) -> int:
+    """Tìm độ dài lớn nhất của một đoạn con liên tiếp (tăng hoặc giảm)."""
+    n = len(s)
+    if n <= 1:
+        return n
+    maxrun = 1
+    for i in range(n):
+        # kiểm tra chạy từ i sang phải
+        for j in range(i+1, n):
+            sub = s[i:j+1]
+            if is_sequential(sub):
+                if len(sub) > maxrun:
+                    maxrun = len(sub)
+    return maxrun
+
+def is_palindrome(s: str) -> bool:
+    return s == s[::-1]
+
+def is_half_repeat(s: str) -> bool:
+    """Ví dụ 121212 hoặc 123123 (n/2 pattern repeated)."""
+    n = len(s)
+    if n % 2 != 0:
+        return False
+    half = s[:n//2]
+    return half * 2 == s
+
+# --- quy tắc quyết định 'xấu' hay không ---
+def is_ugly_otp(
+    s: str,
+    blacklist: Iterable[str] = BLACKLIST,
+    min_unique_digits: int = 3,
+    max_allowed_repeat: int = 3,
+    max_allowed_run: int = 3
+) -> bool:
+    s = str(s)
+    if not s.isdigit():
+        return False
+    if s in set(blacklist):
+        return False
+    if len(set(s)) < min_unique_digits:
+        return False
+    if max_repeat_length(s) > max_allowed_repeat:
+        return False
+    if max_run_length(s) > max_allowed_run:
+        return False
+    if is_palindrome(s):
+        return False
+    if is_half_repeat(s):
+        return False
+    return True
+
+def inRedis(otp_code: str) -> bool:
+    r = get_redis_connection()
+    for key in r.scan_iter(match="*"):
+        value = r.get(key)
+        if value == otp_code:
+            return True
+    return False
+
+def generate_otp():
+    # Tạo mã OTP
+    otp_code = str(random.randint(100000,999999))
+    # Check redis
+    while (not is_ugly_otp(otp_code)) or (inRedis(otp_code)): # Check số đẹp
+        otp_code = str(random.randint(100000,999999))
+    return otp_code
+
 
 def send_otp_email(email, otp):
     # --- Cấu hình ---
@@ -360,7 +436,6 @@ def send_otp_email(email, otp):
             print("Email sent successfully!")
     except Exception as e:
         print("Error:", e)
->>>>>>> Stashed changes
 
 class sendOTPReq(BaseModel):
     customer_id: int
@@ -379,15 +454,11 @@ class VerifyOTPReq(BaseModel):
 @app.post("/sendotp")
 def sendOTP(requestOTP: sendOTPReq = Body(...)):
     otp_code = generate_otp()
-<<<<<<< Updated upstream
-    ttl_seconds = 300  #expire in 5 mins
-=======
     ttl_seconds = 160  #expire in 5 mins
     key = str(requestOTP.customer_id) + ":" + str(requestOTP.transaction_id) + ":" + str(requestOTP.tuition_id)
     r = get_redis_connection()
     
     r.setex(key, ttl_seconds, otp_code)
->>>>>>> Stashed changes
 
     send_otp_email(requestOTP.email, otp_code)
 
@@ -412,10 +483,15 @@ def verifyOTP(requestOTP: VerifyOTPReq = Body(...)):
     try:
         cur = conn.cursor(pymysql.cursors.DictCursor)
         cur.execute("SELECT * FROM Tuition INNER JOIN `Transaction` ON Tuition.TuitionID=`Transaction`.TuitionID WHERE `Transaction`.TransactionID=%s", (requestOTP.transaction_id,))
-
         tuition = cur.fetchone()
+
+        cur.execute("SELECT Balance FROM Customer WHERE CustomerID=%s", (requestOTP.customer_id,))
+        current_balance = cur.fetchone()
+
         fee = tuition["Fee"]
-        cur.execute("UPDATE Customer SET Balance=Balance-%s WHERE CustomerID=%s", (fee, requestOTP.customer_id,))
+
+        new_balance = current_balance["Balance"] - fee
+        cur.execute("UPDATE Customer SET Balance=%s WHERE CustomerID=%s", (new_balance, requestOTP.customer_id,))
         cur.execute("UPDATE `Transaction` SET `Status`=\"PAID\" WHERE TransactionID=%s", (requestOTP.transaction_id,))
         conn.commit()
         r.delete(key)
@@ -426,3 +502,56 @@ def verifyOTP(requestOTP: VerifyOTPReq = Body(...)):
     finally:
         conn.close()
 
+
+@app.get("/transactions")
+def get_paid_transactions(customer_id: int | None = None, current_user: dict = Depends(get_current_active_user)):
+    """
+    Trả về các transaction có Status='PAID' cho 1 customer.
+    - Nếu customer_id không truyền => dùng customer hiện tại từ token.
+    - Nếu truyền nhưng khác current_user => 403 Forbidden.
+    """
+    # xác định customer_id thực tế
+    if customer_id is None:
+        customer_id = current_user["CustomerID"]
+    elif customer_id != current_user["CustomerID"]:
+        raise HTTPException(status_code=403, detail="Forbidden: you can only view your own transactions")
+
+    conn = get_connection()
+    try:
+        # dùng DictCursor để lấy dict từ DB (giống pattern trong verifyOTP)
+        cur = conn.cursor(pymysql.cursors.DictCursor)
+        cur.execute("""
+            SELECT 
+                tx.TransactionID,
+                tx.PaidAt,
+                t.Semester,
+                s.FullName AS StudentFullName,
+                t.Fee AS Amount
+            FROM `Transaction` tx
+            JOIN Tuition t ON tx.TuitionID = t.TuitionID
+            JOIN Student s ON t.StudentID = s.StudentID
+            WHERE tx.CustomerID = %s
+              AND tx.`Status` = 'PAID'
+            ORDER BY tx.PaidAt DESC
+        """, (customer_id,))
+
+        rows = cur.fetchall()
+
+        # format dữ liệu trả về (chuyển datetime thành ISO string nếu cần)
+        result = []
+        for r in rows:
+            paid_at = r.get("PaidAt")
+            if isinstance(paid_at, datetime):
+                paid_at = paid_at.isoformat()
+            result.append({
+                "TransactionID": r.get("TransactionID"),
+                "PaidAt": paid_at,
+                "Semester": r.get("Semester"),
+                "StudentFullName": r.get("StudentFullName"),
+                "Amount": r.get("Amount")
+            })
+
+        return {"paid_transactions": result}
+
+    finally:
+        conn.close()

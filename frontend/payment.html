@@ -103,25 +103,39 @@
                 </div>
             </div>
 
-            <!-- Transaction Section -->
-            <div id="transaction-page" class="transaction-page hidden">
-                <div class="left-col">
-                    <div class="userInfo-box">
-                        User Info
-                    </div>
+           <div id="transaction-page" class="transaction-page hidden">
 
-                    <div class="note-info">
-                        Các lưu ý:
-                        
-                    </div>
+        
+        <div class="transaction-container">
+            <h2>Lịch sử giao dịch học phí</h2>
 
-                    <div class="payment">
-                        UI Thanh toán
-                    </div>
+            <table id="history-table">
+            <thead>
+                <tr>
+                <th>Ngày giao dịch</th>
+                <th>Học Kỳ</th>
+                <th>Họ và Tên</th>
+                <th>Số tiền (VND)</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            </table>
 
-                    <div class="bill-info">
-                        Thông tin giao dịch
-                    </div>
+            <div class="pagination">
+            <div class="controls">
+                <label>Rows per page:
+                <select id="rows-per-page">
+                    <option>5</option>
+                    <option selected>10</option>
+                    <option>20</option>
+                </select>
+                </label>
+            </div>
+
+            <div class="controls" id="page-controls"></div>
+
+            <div class="controls">
+                <span id="range-info"></span>
             </div>
         </div>
     </div>

@@ -3,6 +3,7 @@ USE db_ebank;
 
 -- DROP DATABASE db_ebank;
 
+
 CREATE TABLE Customer (
     CustomerID INT NOT NULL AUTO_INCREMENT,
     UserName VARCHAR(25) NOT NULL UNIQUE,
@@ -25,28 +26,28 @@ CREATE TABLE Student (
 );
 
 CREATE TABLE Tuition (
-    TutionID INT NOT NULL AUTO_INCREMENT,
+    TuitionID INT NOT NULL AUTO_INCREMENT,
     StudentID VARCHAR(20) NOT NULL,
     Semester VARCHAR(25) CHARACTER SET utf8mb4 NOT NULL,
     Fee INT NOT NULL DEFAULT 0,
     BeginDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     EndDate TIMESTAMP NOT NULL,
     
-    CONSTRAINT PK_Tution PRIMARY KEY(TutionID),
+    CONSTRAINT PK_Tuition PRIMARY KEY(TuitionID),
     CONSTRAINT CHK_Fee CHECK (Fee >= 0),
-    CONSTRAINT FK_Tution_Student FOREIGN KEY (StudentID) REFERENCES Student(StudentID)
+    CONSTRAINT FK_Tuition_Student FOREIGN KEY (StudentID) REFERENCES Student(StudentID)
 );
 
 CREATE TABLE `Transaction` (
     TransactionID INT NOT NULL AUTO_INCREMENT,
     CustomerID INT NOT NULL,
-    TutionID INT NOT NULL,
+    TuitionID INT NOT NULL,
     PaidAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    `Status` ENUM('PAID','UNPAID','CANCELLED') NOT NULL,
+    `Status` ENUM('PENDING','PAID','UNPAID','CANCELLED') NOT NULL,
     
     CONSTRAINT PK_Transaction PRIMARY KEY(TransactionID),
     CONSTRAINT FK_Transaction_Customer FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID),
-    CONSTRAINT FK_Transaction_Tution FOREIGN KEY (TutionID) REFERENCES Tuition(TutionID)
+    CONSTRAINT FK_Transaction_Tuition FOREIGN KEY (TuitionID) REFERENCES Tuition(TuitionID)
 );
 
 -- Values 
@@ -62,9 +63,6 @@ VALUES
 ("2", 'Ngô Chí Thuận', 'ngochithuan.dev@student.com'),
 ("3", 'Lê Nguyễn Cao Duy', 'hoa@student.com');
 
-<<<<<<< Updated upstream
-select * from customer
-=======
 INSERT INTO Tuition (StudentID, Semester, Fee, EndDate)
 VALUES
 ("1", 'Semester1-2025-2026', 1500000, '2025-12-31 23:59:59'),
@@ -87,4 +85,5 @@ VALUES
 -- SELECT * FROM Customer;
 -- SELECT * FROM Tuition;
 -- SELECT * FROM Transaction;
->>>>>>> Stashed changes
+
+-- SELECT * FROM `Transaction` Where CustomerID=1 AND `Status`="PAID"
